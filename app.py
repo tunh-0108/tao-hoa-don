@@ -790,6 +790,10 @@ def trang_tao_hoa_don_bangsoat():
     df = pd.DataFrame(st.session_state.bang_bs)
     df = df.reindex(columns=danh_sach_cot_bs(so_nhom), fill_value="")
     df = lam_sach_nan(df)
+    # Ép mọi ô về chuỗi để tránh lỗi tuần tự hóa Arrow khi một cột vừa có số vừa có ô
+    # trống (vd cột "Số lượng" có dòng = 4, dòng khác để trống). Dữ liệu thật trong
+    # session vẫn giữ nguyên kiểu số; đây chỉ là bản CHUỖI để hiển thị trên bảng.
+    df = df.astype(str).replace({"None": "", "nan": "", "NaN": "", "<NA>": ""})
 
     css_bang = {
         ".ag-header-cell-label": {"justify-content": "center"},
@@ -803,9 +807,8 @@ def trang_tao_hoa_don_bangsoat():
     grid_response = AgGrid(
         df,
         gridOptions=tao_grid_options_bs(so_nhom),
-        update_mode=GridUpdateMode.VALUE_CHANGED | GridUpdateMode.SELECTION_CHANGED,
+        update_on=["cellValueChanged", "selectionChanged"],
         data_return_mode=DataReturnMode.AS_INPUT,
-        reload_data=True,
         allow_unsafe_jscode=True,
         fit_columns_on_grid_load=False,
         custom_css=css_bang,
@@ -868,7 +871,8 @@ def trang_tao_hoa_don_bangsoat():
             ngay_str = st.session_state.ngay_hoa_don_bs.strftime("%d/%m/%Y")
             # Thêm tiền tố "Đồ uống " cho cột Tên đồ uống khác khi xuất file (app vẫn giữ nguyên)
             bang_xuat = L.chuan_bi_xuat_bangsoat(st.session_state.bang_bs, so_nhom)
-            data = ex.xuat_file_bytes(bang_xuat, so_nhom, ngay_str, thue, tron_tong=True)
+            data = ex.xuat_file_bytes(bang_xuat, so_nhom, ngay_str, thue,
+                                      tron_tong=True, don_gia_chua_thue=True)
             st.session_state.file_bytes_bs = data
             st.session_state.file_name_bs = f"DanhSachHoaDon_BangSoat_{ngay_str.replace('/', '_')}.xlsx"
             st.success("Đã tạo file.")

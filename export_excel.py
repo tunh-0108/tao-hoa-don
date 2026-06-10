@@ -57,7 +57,8 @@ def _format_don_gia(value):
     return f"{f:.2f}"
 
 
-def tao_cac_dong_output(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat, tron_tong=False):
+def tao_cac_dong_output(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat,
+                        tron_tong=False, don_gia_chua_thue=False):
     """
     Từ bảng hóa đơn (list dict), tạo ra list các dòng output (mỗi dòng là 1 dict
     theo đúng tên cột OUTPUT_HEADERS).
@@ -114,7 +115,13 @@ def tao_cac_dong_output(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat, tron
             dong_out["TenHangHoa"] = dong.get(L.key_nhom(g, "Tên"), "")
             dong_out["DonViTinh"] = dong.get(L.key_nhom(g, "Đơn vị"), "")
             dong_out["SoLuong"] = dong.get(L.key_nhom(g, "Số lượng"), "")
-            dong_out["DonGia"] = _format_don_gia(dong.get(L.key_nhom(g, "Đơn giá"), ""))
+            so_luong = L.to_int(dong.get(L.key_nhom(g, "Số lượng")))
+            if don_gia_chua_thue and so_luong != 0:
+                # Đơn giá trong file phải là đơn giá CHƯA thuế = ThanhTien (chưa thuế) / Số lượng.
+                # (Trên bảng, Đơn giá là giá ĐÃ gồm thuế nên không dùng trực tiếp được.)
+                dong_out["DonGia"] = _format_don_gia(thanh_tien / so_luong)
+            else:
+                dong_out["DonGia"] = _format_don_gia(dong.get(L.key_nhom(g, "Đơn giá"), ""))
             dong_out["ThanhTien"] = thanh_tien
             dong_out["TienThue"] = tien_thue
             cac_dong.append(dong_out)
@@ -122,13 +129,16 @@ def tao_cac_dong_output(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat, tron
     return cac_dong
 
 
-def xuat_file_bytes(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat, tron_tong=False):
+def xuat_file_bytes(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat,
+                    tron_tong=False, don_gia_chua_thue=False):
     """
     Tạo file Excel trong bộ nhớ và trả về dạng bytes (để Streamlit cho tải về).
     tron_tong=True: làm cho ThanhTien + TienThue = đúng số tiền gồm thuế (không lệch 1đ).
+    don_gia_chua_thue=True: ghi Đơn giá trong file = ThanhTien (chưa thuế) / Số lượng.
     """
     cac_dong = tao_cac_dong_output(
-        bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat, tron_tong=tron_tong
+        bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat,
+        tron_tong=tron_tong, don_gia_chua_thue=don_gia_chua_thue,
     )
 
     wb = openpyxl.Workbook()

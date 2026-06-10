@@ -1,0 +1,10 @@
+# Các thư viện cần cài để chạy app.
+# Cài bằng lệnh:  pip install -r requirements.txt
+#
+# Lưu ý: st.dialog (hộp thoại gộp dòng / xác nhận xuất file) cần Streamlit >= 1.31.
+# Phiên bản dưới đây đã được kiểm thử.
+
+streamlit>=1.31
+streamlit-aggrid>=1.0.5
+pandas>=2.0
+openpyxl>=3.1

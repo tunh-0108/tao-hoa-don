@@ -503,21 +503,35 @@ def cap_nhat_tien_bangsoat(dong, so_nhom, thue_suat):
     dong["Tổng tiền hàng"] = tong
 
 
-def chuan_bi_xuat_bangsoat(bang):
+def chuan_bi_xuat_bangsoat(bang, so_nhom):
     """
     Trả về BẢN SAO của bảng để XUẤT FILE (không làm đổi dữ liệu hiển thị trên app).
-    Việc duy nhất: thêm tiền tố 'Đồ uống ' vào trước ô Tên của nhóm
-    'Đồ uống khác' (HH3). Ví dụ: 'Coffee' -> 'Đồ uống Coffee'.
-    (Nếu ô trống thì để nguyên; nếu đã có sẵn tiền tố thì không thêm lần nữa.)
+    Hai việc:
+      1) Thêm tiền tố 'Đồ uống ' vào trước ô Tên của nhóm 'Đồ uống khác' (HH3).
+         Ví dụ: 'Coffee' -> 'Đồ uống Coffee'.
+      2) Với các nhóm hàng hóa TỪ HH2 TRỞ ĐI (Dasani, Đồ uống khác, các tab thêm):
+         nếu Số lượng = 0 thì XÓA cả nhóm -> file output sẽ KHÔNG tạo dòng cho nó
+         (kể cả khi ô Tên có giá trị). Nhóm HH1 (Tiền phòng) luôn giữ nguyên.
+    (Ô trống thì để nguyên; nếu Tên đã có sẵn tiền tố thì không thêm lần nữa.)
     """
     tien_to = "Đồ uống "
     ban_sao = []
     for d in bang:
         d2 = dict(d)  # sao chép nông là đủ vì mỗi ô là giá trị đơn
+
+        # (1) Thêm tiền tố cho Tên đồ uống khác
         ten = d2.get("HH3_Tên")
         if not la_rong(ten):
             ten = str(ten).strip()
             if not ten.startswith(tien_to):
                 d2["HH3_Tên"] = tien_to + ten
+
+        # (2) Bỏ nhóm có Số lượng = 0 (từ HH2 trở đi)
+        for g in range(2, so_nhom + 1):
+            sl = d2.get(key_nhom(g, "Số lượng"))
+            if not la_rong(sl) and to_int(sl) == 0:
+                for ht in HAU_TO_NHOM:
+                    d2[key_nhom(g, ht)] = ""
+
         ban_sao.append(d2)
     return ban_sao

@@ -867,7 +867,7 @@ def trang_tao_hoa_don_bangsoat():
         if st.button("📤 Xuất file danh sách hóa đơn", type="primary", key="bs_xuat"):
             ngay_str = st.session_state.ngay_hoa_don_bs.strftime("%d/%m/%Y")
             # Thêm tiền tố "Đồ uống " cho cột Tên đồ uống khác khi xuất file (app vẫn giữ nguyên)
-            bang_xuat = L.chuan_bi_xuat_bangsoat(st.session_state.bang_bs)
+            bang_xuat = L.chuan_bi_xuat_bangsoat(st.session_state.bang_bs, so_nhom)
             data = ex.xuat_file_bytes(bang_xuat, so_nhom, ngay_str, thue, tron_tong=True)
             st.session_state.file_bytes_bs = data
             st.session_state.file_name_bs = f"DanhSachHoaDon_BangSoat_{ngay_str.replace('/', '_')}.xlsx"

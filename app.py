@@ -655,6 +655,12 @@ def xu_ly_sau_khi_sua_bs(edited_records, so_nhom, thue_suat):
             can_lam_moi = True
         st.session_state.prev_loai_bs[rid] = khoa
 
+        # Chuẩn hóa Mã số thuế (thêm '0' đầu nếu thiếu) để hiển thị đúng ngay trên bảng
+        mst_moi = L.chuan_hoa_mst(row.get("Mã số thuế"))
+        if mst_moi != (row.get("Mã số thuế") or ""):
+            row["Mã số thuế"] = mst_moi
+            can_lam_moi = True
+
         L.cap_nhat_tien_bangsoat(row, so_nhom, thue_suat)
         bang_moi.append(row)
     st.session_state.bang_bs = bang_moi
@@ -861,6 +867,13 @@ def trang_tao_hoa_don_bangsoat():
     loi = []
     for i, row in enumerate(st.session_state.bang_bs, start=1):
         loi += L.kiem_tra_dong(row, so_nhom, i)
+        # Kiểm tra Mã số thuế: phải để trống hoặc đúng 10/13 chữ số (đếm bỏ gạch ngang)
+        if not L.mst_hop_le(row.get("Mã số thuế")):
+            loi.append(
+                f"Dòng {i} (phòng {row.get('Phòng', '')}): Mã số thuế "
+                f"'{row.get('Mã số thuế', '')}' không hợp lệ — phải có 10 hoặc 13 chữ số. "
+                f"Vui lòng sửa lại trong file hoặc ngay trên bảng."
+            )
 
     if loi:
         st.error("Còn lỗi cần sửa trước khi xuất file:")

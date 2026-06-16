@@ -384,6 +384,40 @@ def doc_tien(value):
         return int(chu_so) if chu_so else ""
 
 
+def _chi_lay_so(s):
+    """Trả về chuỗi chỉ gồm các chữ số (bỏ gạch ngang, dấu cách...)."""
+    return "".join(ch for ch in str(s) if ch.isdigit())
+
+
+def chuan_hoa_mst(mst):
+    """
+    Khôi phục số 0 bị mất ở đầu Mã số thuế (do Excel coi là số khi paste).
+    Quy tắc: nếu MST có ĐÚNG 9 hoặc 12 CHỮ SỐ (đếm bỏ qua gạch ngang) và chữ số
+    đầu KHÁC '0' thì thêm '0' vào đầu (để thành 10 hoặc 13 chữ số). Giữ nguyên
+    gạch ngang nếu có. Các trường hợp khác giữ nguyên.
+    Ví dụ: '101243150' -> '0101243150' ; '101243150-001' -> '0101243150-001'
+    """
+    if la_rong(mst):
+        return ""
+    s = str(mst).strip()
+    so = _chi_lay_so(s)
+    if len(so) in (9, 12) and not so.startswith("0"):
+        return "0" + s
+    return s
+
+
+def mst_hop_le(mst):
+    """
+    True nếu MST hợp lệ để xuất file:
+      - Để TRỐNG (khách lẻ không có MST) -> hợp lệ.
+      - Hoặc có ĐÚNG 10 hay 13 chữ số (đếm bỏ qua gạch ngang).
+    Ngược lại là bất thường (8, 9, 11, 12, 14... chữ số).
+    """
+    if la_rong(mst):
+        return True
+    return len(_chi_lay_so(mst)) in (10, 13)
+
+
 def truncate_2_so_le(value):
     """
     Giữ tối đa 2 chữ số thập phân, KHÔNG làm tròn (cắt bớt - truncate).
@@ -435,7 +469,7 @@ def tao_dong_tu_bangsoat(rec, ngay_hoa_don_str, hinh_thuc_thanh_toan):
         "CCCD/PASSPORT": rec.get("CCCD/PASSPORT", ""),
         "Loại hóa đơn": rec.get("Loại hóa đơn", LOAI_BS_CO_BAN),
         "Tên đơn vị mua hàng": rec.get("Tên đơn vị mua hàng", ""),
-        "Mã số thuế": rec.get("Mã số thuế", ""),
+        "Mã số thuế": chuan_hoa_mst(rec.get("Mã số thuế", "")),
         "Địa chỉ": rec.get("Địa chỉ", ""),
         "Email": rec.get("Email", ""),
         "Hình thức thanh toán": hinh_thuc_thanh_toan,

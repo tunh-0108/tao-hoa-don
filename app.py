@@ -661,6 +661,12 @@ def xu_ly_sau_khi_sua_bs(edited_records, so_nhom, thue_suat):
             row["Mã số thuế"] = mst_moi
             can_lam_moi = True
 
+        # Chuẩn hóa CCCD (thêm '0' đầu nếu là dãy số 11 chữ số) để hiển thị đúng trên bảng
+        cccd_moi = L.chuan_hoa_cccd(row.get("CCCD/PASSPORT"))
+        if cccd_moi != (row.get("CCCD/PASSPORT") or ""):
+            row["CCCD/PASSPORT"] = cccd_moi
+            can_lam_moi = True
+
         L.cap_nhat_tien_bangsoat(row, so_nhom, thue_suat)
         bang_moi.append(row)
     st.session_state.bang_bs = bang_moi

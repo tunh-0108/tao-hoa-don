@@ -418,6 +418,22 @@ def mst_hop_le(mst):
     return len(_chi_lay_so(mst)) in (10, 13)
 
 
+def chuan_hoa_cccd(cccd):
+    """
+    Khôi phục số 0 bị mất ở đầu CCCD (do Excel coi là số khi paste).
+    CCCD chuẩn có 12 chữ số. Nếu giá trị là DÃY SỐ THUẦN có đúng 11 chữ số và
+    chữ số đầu KHÁC '0' thì thêm '0' vào đầu cho đủ 12 số.
+    Các trường hợp khác giữ nguyên: đã đủ 12 số, để trống, hoặc là số hộ chiếu
+    có chữ cái (vì cột là 'CCCD/PASSPORT' nên không đụng vào hộ chiếu).
+    """
+    if la_rong(cccd):
+        return ""
+    s = str(cccd).strip()
+    if s.isdigit() and len(s) == 11 and not s.startswith("0"):
+        return "0" + s
+    return s
+
+
 def truncate_2_so_le(value):
     """
     Giữ tối đa 2 chữ số thập phân, KHÔNG làm tròn (cắt bớt - truncate).
@@ -466,7 +482,7 @@ def tao_dong_tu_bangsoat(rec, ngay_hoa_don_str, hinh_thuc_thanh_toan):
         "Mã đặt phòng": "",  # file Bảng soát không có mã đặt phòng
         "Phòng": rec.get("Phòng", ""),
         "Họ tên người mua hàng": rec.get("Họ tên người mua hàng", ""),
-        "CCCD/PASSPORT": rec.get("CCCD/PASSPORT", ""),
+        "CCCD/PASSPORT": chuan_hoa_cccd(rec.get("CCCD/PASSPORT", "")),
         "Loại hóa đơn": rec.get("Loại hóa đơn", LOAI_BS_CO_BAN),
         "Tên đơn vị mua hàng": rec.get("Tên đơn vị mua hàng", ""),
         "Mã số thuế": chuan_hoa_mst(rec.get("Mã số thuế", "")),

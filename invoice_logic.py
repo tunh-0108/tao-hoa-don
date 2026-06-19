@@ -519,23 +519,22 @@ def tao_dong_tu_bangsoat(rec, ngay_hoa_don_str, hinh_thuc_thanh_toan):
     Tạo 1 dòng hóa đơn (dict) cho bảng Bảng soát từ 1 dòng dữ liệu file (rec).
 
     rec chứa các khóa (do bangsoat_reader trả về):
-      Phòng, Họ tên người mua hàng, CCCD/PASSPORT, Loại hóa đơn, Số đêm, Số lượng Dasani,
+      Phòng, Họ tên người mua hàng, CCCD, PASSPORT, Loại hóa đơn, Số đêm, Số lượng Dasani,
       Tên đồ uống khác, Số lượng đồ uống khác, Tiền phòng,
       Tên đơn vị mua hàng, Mã số thuế, Địa chỉ, Email
     ngay_hoa_don_str: chuỗi 'dd/mm/yyyy' = ngày checkout của hóa đơn (chung cho mọi dòng).
 
     Quy tắc: cột nào trong file để TRỐNG thì ô tương ứng trên app cũng để TRỐNG.
     """
-    # Tách cột 'CCCD/PASSPORT' của file input thành 2 cột CCCD và PASSPORT
-    cccd, passport = tach_cccd_passport(rec.get("CCCD/PASSPORT", ""))
     dong = {
         "_row_id": str(uuid.uuid4()),
         "Ngày hóa đơn": ngay_hoa_don_str,
         "Mã đặt phòng": "",  # file Bảng soát không có mã đặt phòng
         "Phòng": rec.get("Phòng", ""),
         "Họ tên người mua hàng": rec.get("Họ tên người mua hàng", ""),
-        "CCCD": cccd,
-        "PASSPORT": passport,
+        # CCCD: chuẩn hóa (thêm '0' nếu 11 số); PASSPORT: bê nguyên từ file input
+        "CCCD": chuan_hoa_cccd(rec.get("CCCD", "")),
+        "PASSPORT": rec.get("PASSPORT", ""),
         "Loại hóa đơn": rec.get("Loại hóa đơn", LOAI_BS_CO_BAN),
         "Tên đơn vị mua hàng": rec.get("Tên đơn vị mua hàng", ""),
         "Mã số thuế": chuan_hoa_mst(rec.get("Mã số thuế", "")),

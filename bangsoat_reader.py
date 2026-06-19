@@ -24,7 +24,8 @@ import invoice_logic as L
 # Tên cột trong file Bảng soát (phải khớp tiêu đề ở dòng 1)
 COT_PHONG = "PHÒNG OUT"
 COT_TEN = "TÊN NGƯỜI XHĐ"
-COT_CCCD = "CCCD/PASSPORT"
+COT_CCCD = "CCCD"
+COT_PASSPORT = "PASSPORT"
 COT_CHUYEN_GIA = "Hóa đơn chuyên gia"
 COT_CO_BAN = "Hóa đơn cơ bản"
 COT_SO_DEM = "SỐ ĐÊM"
@@ -38,8 +39,9 @@ COT_DIA_CHI = "Địa chỉ"
 COT_EMAIL = "Email"
 
 TAT_CA_COT = [
-    COT_PHONG, COT_TEN, COT_CCCD, COT_CHUYEN_GIA, COT_CO_BAN, COT_SO_DEM, COT_SL_DASANI,
-    COT_TEN_DU, COT_SL_DU, COT_TIEN_PHONG, COT_DON_VI, COT_MST, COT_DIA_CHI, COT_EMAIL,
+    COT_PHONG, COT_TEN, COT_CCCD, COT_PASSPORT, COT_CHUYEN_GIA, COT_CO_BAN, COT_SO_DEM,
+    COT_SL_DASANI, COT_TEN_DU, COT_SL_DU, COT_TIEN_PHONG, COT_DON_VI, COT_MST,
+    COT_DIA_CHI, COT_EMAIL,
 ]
 
 
@@ -120,7 +122,8 @@ def doc_file_bangsoat(duong_dan_hoac_file):
             {
                 "Phòng": str(lay(COT_PHONG) or "").strip(),
                 "Họ tên người mua hàng": str(lay(COT_TEN) or "").strip(),
-                "CCCD/PASSPORT": str(lay(COT_CCCD) or "").strip(),
+                "CCCD": str(lay(COT_CCCD) or "").strip(),
+                "PASSPORT": str(lay(COT_PASSPORT) or "").strip(),
                 "Loại hóa đơn": loai,
                 "Số đêm": lay(COT_SO_DEM),
                 "Số lượng Dasani": lay(COT_SL_DASANI),
@@ -141,7 +144,7 @@ def tao_file_mau_bytes():
     """
     Tạo file Excel MẪU để user tải về và điền dữ liệu.
     File chỉ gồm DÒNG TIÊU ĐỀ với đúng các cột (và đúng thứ tự) mà app mong đợi,
-    bao gồm cả cột 'CCCD/PASSPORT'. Trả về dạng bytes để dùng cho nút tải xuống.
+    bao gồm cả 2 cột 'CCCD' và 'PASSPORT'. Trả về dạng bytes để dùng cho nút tải xuống.
     """
     from openpyxl.styles import Font, PatternFill, Alignment
     from openpyxl.utils import get_column_letter

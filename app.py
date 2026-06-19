@@ -557,7 +557,7 @@ def tao_grid_options_bs(so_nhom):
     }
     """)
 
-    cot_ghim = {"Mã đặt phòng", "Phòng", "Họ tên người mua hàng", "CCCD/PASSPORT", "Loại hóa đơn"}
+    cot_ghim = {"Mã đặt phòng", "Phòng", "Họ tên người mua hàng", "CCCD", "PASSPORT", "Loại hóa đơn"}
     cot_can_trai = {"Họ tên người mua hàng", "Loại hóa đơn", "HH1_Tên"}
 
     # Cột ẩn
@@ -662,9 +662,9 @@ def xu_ly_sau_khi_sua_bs(edited_records, so_nhom, thue_suat):
             can_lam_moi = True
 
         # Chuẩn hóa CCCD (thêm '0' đầu nếu là dãy số 11 chữ số) để hiển thị đúng trên bảng
-        cccd_moi = L.chuan_hoa_cccd(row.get("CCCD/PASSPORT"))
-        if cccd_moi != (row.get("CCCD/PASSPORT") or ""):
-            row["CCCD/PASSPORT"] = cccd_moi
+        cccd_moi = L.chuan_hoa_cccd(row.get("CCCD"))
+        if cccd_moi != (row.get("CCCD") or ""):
+            row["CCCD"] = cccd_moi
             can_lam_moi = True
 
         L.cap_nhat_tien_bangsoat(row, so_nhom, thue_suat)
@@ -680,7 +680,8 @@ def hop_thoai_gop_bs(selected_ids, so_nhom, httt):
     row["Mã đặt phòng"] = st.text_input("Mã đặt phòng", key="gopbs_madp")
     row["Phòng"] = st.text_input("Phòng", key="gopbs_phong")
     row["Họ tên người mua hàng"] = st.text_input("Họ tên người mua hàng", key="gopbs_hoten")
-    row["CCCD/PASSPORT"] = st.text_input("CCCD/PASSPORT", key="gopbs_cccd")
+    row["CCCD"] = st.text_input("CCCD", key="gopbs_cccd")
+    row["PASSPORT"] = st.text_input("PASSPORT", key="gopbs_passport")
     row["Loại hóa đơn"] = st.selectbox("Loại hóa đơn", L.DANH_SACH_LOAI_BS, key="gopbs_loai")
     row["Tên đơn vị mua hàng"] = st.text_input("Tên đơn vị mua hàng", key="gopbs_donvi")
     row["Mã số thuế"] = st.text_input("Mã số thuế", key="gopbs_mst")
@@ -878,6 +879,13 @@ def trang_tao_hoa_don_bangsoat():
             loi.append(
                 f"Dòng {i} (phòng {row.get('Phòng', '')}): Mã số thuế "
                 f"'{row.get('Mã số thuế', '')}' không hợp lệ — phải có 10 hoặc 13 chữ số. "
+                f"Vui lòng sửa lại trong file hoặc ngay trên bảng."
+            )
+        # Kiểm tra CCCD: phải để trống hoặc đúng 12 chữ số
+        if not L.cccd_hop_le(row.get("CCCD")):
+            loi.append(
+                f"Dòng {i} (phòng {row.get('Phòng', '')}): CCCD "
+                f"'{row.get('CCCD', '')}' không hợp lệ — phải có đúng 12 chữ số. "
                 f"Vui lòng sửa lại trong file hoặc ngay trên bảng."
             )
 

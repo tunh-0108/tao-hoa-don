@@ -88,7 +88,8 @@ def tao_cac_dong_output(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat,
             "NguoiMuaHang": dong.get("Họ tên người mua hàng", ""),
             "DiaChiKhachHang": dong.get("Địa chỉ", ""),
             "MaSoThue": dong.get("Mã số thuế", ""),
-            "CCCD": L.chuan_hoa_cccd(dong.get("CCCD/PASSPORT", "")),  # cột CCCD (Bảng soát); ezcloud để rỗng
+            "CCCD": L.chuan_hoa_cccd(dong.get("CCCD", "")),  # cột CCCD (Bảng soát); ezcloud để rỗng
+            "SHChieu": dong.get("PASSPORT", ""),  # số hộ chiếu (Bảng soát); ezcloud để rỗng
             "MailKhachHang": dong.get("Email", ""),  # cột Email (tính năng Bảng soát); ezcloud để rỗng
             "HinhThucThanhToan": dong.get("Hình thức thanh toán", ""),
             "LoaiHangHoa": "1",

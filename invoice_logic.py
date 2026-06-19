@@ -329,7 +329,8 @@ COT_THONG_TIN_BS = [
     "Mã đặt phòng",
     "Phòng",
     "Họ tên người mua hàng",
-    "CCCD/PASSPORT",
+    "CCCD",
+    "PASSPORT",
     "Loại hóa đơn",
     "Tên đơn vị mua hàng",
     "Mã số thuế",
@@ -434,6 +435,32 @@ def chuan_hoa_cccd(cccd):
     return s
 
 
+def tach_cccd_passport(gia_tri):
+    """
+    Tách giá trị cột 'CCCD/PASSPORT' của file input thành 2 phần (cccd, passport):
+      - Trống -> ('', '')
+      - CÓ ít nhất 1 chữ cái -> ('', giá_trị)  (coi là số hộ chiếu - PASSPORT)
+      - TOÀN số (không có chữ cái) -> (chuan_hoa_cccd(giá_trị), '')  (coi là CCCD,
+        có thêm '0' đầu nếu đang là 11 số)
+    """
+    if la_rong(gia_tri):
+        return "", ""
+    s = str(gia_tri).strip()
+    if any(ch.isalpha() for ch in s):
+        return "", s
+    return chuan_hoa_cccd(s), ""
+
+
+def cccd_hop_le(cccd):
+    """
+    True nếu CCCD hợp lệ để xuất file: để TRỐNG hoặc có ĐÚNG 12 chữ số (toàn số).
+    """
+    if la_rong(cccd):
+        return True
+    s = str(cccd).strip()
+    return s.isdigit() and len(s) == 12
+
+
 def truncate_2_so_le(value):
     """
     Giữ tối đa 2 chữ số thập phân, KHÔNG làm tròn (cắt bớt - truncate).
@@ -476,13 +503,16 @@ def tao_dong_tu_bangsoat(rec, ngay_hoa_don_str, hinh_thuc_thanh_toan):
 
     Quy tắc: cột nào trong file để TRỐNG thì ô tương ứng trên app cũng để TRỐNG.
     """
+    # Tách cột 'CCCD/PASSPORT' của file input thành 2 cột CCCD và PASSPORT
+    cccd, passport = tach_cccd_passport(rec.get("CCCD/PASSPORT", ""))
     dong = {
         "_row_id": str(uuid.uuid4()),
         "Ngày hóa đơn": ngay_hoa_don_str,
         "Mã đặt phòng": "",  # file Bảng soát không có mã đặt phòng
         "Phòng": rec.get("Phòng", ""),
         "Họ tên người mua hàng": rec.get("Họ tên người mua hàng", ""),
-        "CCCD/PASSPORT": chuan_hoa_cccd(rec.get("CCCD/PASSPORT", "")),
+        "CCCD": cccd,
+        "PASSPORT": passport,
         "Loại hóa đơn": rec.get("Loại hóa đơn", LOAI_BS_CO_BAN),
         "Tên đơn vị mua hàng": rec.get("Tên đơn vị mua hàng", ""),
         "Mã số thuế": chuan_hoa_mst(rec.get("Mã số thuế", "")),

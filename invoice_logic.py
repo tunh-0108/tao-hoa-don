@@ -327,7 +327,6 @@ DANH_SACH_LOAI_BS = [LOAI_BS_CHUYEN_GIA, LOAI_BS_CO_BAN]
 
 # Cột thông tin của bảng Bảng soát: GIỐNG bảng cũ nhưng THÊM cột "Email" cạnh "Địa chỉ".
 COT_THONG_TIN_BS = [
-    "Mã đặt phòng",
     "Phòng",
     "Họ tên người mua hàng",
     "CCCD",
@@ -529,7 +528,6 @@ def tao_dong_tu_bangsoat(rec, ngay_hoa_don_str, hinh_thuc_thanh_toan):
     dong = {
         "_row_id": str(uuid.uuid4()),
         "Ngày hóa đơn": ngay_hoa_don_str,
-        "Mã đặt phòng": "",  # file Bảng soát không có mã đặt phòng
         "Phòng": rec.get("Phòng", ""),
         "Họ tên người mua hàng": rec.get("Họ tên người mua hàng", ""),
         # CCCD: chuẩn hóa (thêm '0' nếu 11 số); PASSPORT: bê nguyên từ file input

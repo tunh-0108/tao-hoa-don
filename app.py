@@ -557,7 +557,7 @@ def tao_grid_options_bs(so_nhom):
     }
     """)
 
-    cot_ghim = {"Mã đặt phòng", "Phòng", "Họ tên người mua hàng", "CCCD", "PASSPORT", "Loại hóa đơn"}
+    cot_ghim = {"Phòng", "Họ tên người mua hàng"}
     cot_can_trai = {"Họ tên người mua hàng", "Loại hóa đơn", "HH1_Tên"}
 
     # Cột ẩn
@@ -677,7 +677,6 @@ def xu_ly_sau_khi_sua_bs(edited_records, so_nhom, thue_suat):
 def hop_thoai_gop_bs(selected_ids, so_nhom, httt):
     st.write(f"Bạn đang gộp **{len(selected_ids)} dòng**. Nhập thông tin DÒNG MỚI rồi bấm Xác nhận.")
     row = {}
-    row["Mã đặt phòng"] = st.text_input("Mã đặt phòng", key="gopbs_madp")
     row["Phòng"] = st.text_input("Phòng", key="gopbs_phong")
     row["Họ tên người mua hàng"] = st.text_input("Họ tên người mua hàng", key="gopbs_hoten")
     row["CCCD"] = st.text_input("CCCD", key="gopbs_cccd")

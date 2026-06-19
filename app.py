@@ -888,6 +888,18 @@ def trang_tao_hoa_don_bangsoat():
                 f"'{row.get('CCCD', '')}' không hợp lệ — phải có đúng 12 chữ số. "
                 f"Vui lòng sửa lại trong file hoặc ngay trên bảng."
             )
+        # Phải có ít nhất 1 trong 2: Họ tên người mua hàng hoặc Mã số thuế
+        if L.la_rong(row.get("Họ tên người mua hàng")) and L.la_rong(row.get("Mã số thuế")):
+            loi.append(
+                f"Dòng {i} (phòng {row.get('Phòng', '')}): thiếu cả 'Họ tên người mua hàng' "
+                f"và 'Mã số thuế' — cần có ít nhất một trong hai."
+            )
+        # Email: để trống hoặc đúng định dạng MỘT email (nhiều email cũng báo lỗi)
+        if not L.email_hop_le(row.get("Email")):
+            loi.append(
+                f"Dòng {i} (phòng {row.get('Phòng', '')}): Email '{row.get('Email', '')}' "
+                f"không hợp lệ — phải là MỘT email đúng định dạng (hoặc để trống)."
+            )
 
     if loi:
         st.error("Còn lỗi cần sửa trước khi xuất file:")

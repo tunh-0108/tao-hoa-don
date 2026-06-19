@@ -16,6 +16,7 @@ LƯU Ý VỀ "TAB" / "NHÓM HÀNG HÓA DỊCH VỤ":
 
 import math
 import random
+import re
 import uuid
 from datetime import datetime, timedelta
 
@@ -459,6 +460,28 @@ def cccd_hop_le(cccd):
         return True
     s = str(cccd).strip()
     return s.isdigit() and len(s) == 12
+
+
+# Mẫu nhận diện 1 email đúng định dạng: phần_tên@tên_miền.đuôi
+# (không cho phép khoảng trắng, dấu phẩy, chấm phẩy bên trong -> chặn nhiều email)
+_EMAIL_RE = re.compile(r"^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$")
+
+
+def email_hop_le(email):
+    """
+    True nếu Email hợp lệ để xuất file:
+      - Để TRỐNG -> hợp lệ.
+      - Hoặc CHỈ MỘT email đúng định dạng (vd: ten@mien.com).
+    Không hợp lệ khi: sai định dạng, HOẶC có nhiều hơn 1 email (có dấu phẩy/chấm
+    phẩy/khoảng trắng, hoặc có nhiều hơn 1 ký tự '@').
+    """
+    if la_rong(email):
+        return True
+    s = str(email).strip()
+    # Có dấu phân tách hoặc nhiều hơn 1 dấu '@' -> coi như nhiều email -> lỗi
+    if any(sep in s for sep in [",", ";", " ", "\t"]) or s.count("@") != 1:
+        return False
+    return bool(_EMAIL_RE.match(s))
 
 
 def truncate_2_so_le(value):

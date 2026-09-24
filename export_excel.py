@@ -3,9 +3,16 @@ export_excel.py
 ---------------
 Tạo file Excel OUTPUT để import vào VinInvoice.
 
-File output có đúng 41 cột (theo file mẫu MauUploadHDMTT). Phần lớn cột để trống,
-chỉ điền những cột có logic mapping. Mỗi giá trị được ghi dạng CHUỖI (text) để
-giống hệt file mẫu (tránh VinInvoice import bị lệch kiểu dữ liệu).
+QUAN TRỌNG: file output được tạo bằng cách NẠP THẲNG file mẫu thật (MauUploadHD_TT78)
+làm nền, xóa các dòng ví dụ có sẵn rồi điền dữ liệu vào - KHÔNG tự dựng workbook mới
+từ đầu. Lý do: VinInvoice kiểm tra "đúng mẫu hệ thống" trước khi nhận file (báo lỗi
+ngay cả khi từng ô dữ liệu hợp lệ), nên file output cần giữ nguyên 100% cấu trúc gốc:
+đủ 3 sheet (kể cả 2 sheet danh mục chỉ dùng cho dropdown), named range, data validation,
+dòng 1 (mã field) ẩn, dòng 2 (nhãn tiếng Việt) - chỉ khác phần DỮ LIỆU ở sheet chính.
+
+77 cột của sheet chính "Thông tin hoá đơn" (theo file mẫu). Phần lớn cột để trống, chỉ
+điền những cột có logic mapping. Mỗi giá trị được ghi dạng CHUỖI (text) để tránh
+VinInvoice import bị lệch kiểu dữ liệu.
 
 Quy tắc gộp dòng (quan trọng):
   - Mỗi DÒNG trong bảng hóa đơn = 1 hóa đơn = 1 MaHD (đánh số tăng dần từ 1).
@@ -14,21 +21,34 @@ Quy tắc gộp dòng (quan trọng):
 """
 
 import io
+import os
 import openpyxl
 from openpyxl.styles import Font
 
 import invoice_logic as L
 
-# 41 tên cột của file output, đúng thứ tự A -> AO
+# File mẫu thật của VinInvoice, dùng làm NỀN cho file output (giữ nguyên 3 sheet,
+# named range, data validation... để VinInvoice không báo "không đúng mẫu hệ thống").
+TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "MauUploadHD_TT78(1).xlsx")
+TEMPLATE_SHEET = "Thông tin hoá đơn"
+DATA_START_ROW = 3  # dòng 1 = mã field (ẩn), dòng 2 = nhãn tiếng Việt, data bắt đầu dòng 3
+
+# 77 tên cột của file output, đúng thứ tự A -> BY (theo file mẫu MauUploadHD_TT78)
 OUTPUT_HEADERS = [
     "MaHD", "LoaiHoaDon", "HoaDonLienQuanNgoaiHeThong", "MauSoHoaDonLienQuan",
-    "KyHieuHoaDonLienQuan", "SoHoaDonLienQuan", "NgayHoaDonLienQuan", "NgayHoaDon",
-    "MDDKDoanh", "TDDKDoanh", "DCDDKDoanh", "MaKhachHang", "TenDonVi", "NguoiMuaHang",
-    "MDVQHNSach", "DiaChiKhachHang", "MaSoThue", "CCCD", "SHChieu", "MailKhachHang",
-    "HinhThucThanhToan", "SoDienThoai", "LoaiHangHoa", "LoaiHangHoaDacTrung",
-    "MaHangHoa", "TenHangHoa", "SoKhung", "SoMay", "BKSPTVanChuyen", "TNGHang",
-    "DCNGuiHang", "MSTNGuiHang", "SDDNguiHang", "GhiChu", "DonViTinh", "SoLuong",
-    "DonGia", "ThanhTien", "ThueSuat", "TienThue", "TienBangChu",
+    "KyHieuHoaDonLienQuan", "SoHoaDonLienQuan", "NgayHoaDonLienQuan", "MSTCLQuan",
+    "LDDCTThe", "NgayHoaDon", "MaKhachHang", "TenNguoiMua", "TenDonVi",
+    "MDVQHNSach", "MDDKDoanh", "TDDKDoanh", "DCDDKDoanh", "DiaChiKhachHang",
+    "CusPhone", "MTinh", "TTinh", "MXa", "TXa", "MaSoThue", "CCCD", "SHChieu",
+    "SDDTCNNgoai", "MQTNMua", "QTNMua", "MailKhachHang", "HinhThucThanhToan",
+    "SoTaiKhoan", "TenTaiKhoan", "LoaiTien", "TyGia", "SoChungTu", "ProcessInvNote",
+    "TCQDGBTSan", "DCCQDGBTSan", "MSTCQDGBTsan", "MCHang", "TCHang", "DCCHang",
+    "LoaiHangHoa", "LoaiHangHoaDacTrung", "MaHangHoa", "TenHangHoa", "SoKhung",
+    "SoMay", "TNHieu", "TTMai", "TLTSDKy", "LTSan", "TTTSan", "KLXe",
+    "TTLVHCSuat", "TTai", "SCNgoi", "MNSXuat", "NSXuat", "XXu", "SBKSoat",
+    "SGCNATKThuat", "SSPKTCLXXuong", "BKSPTVanChuyen", "TNGHang", "DCNGuiHang",
+    "MSTNGuiHang", "SDDNguiHang", "GhiChu", "DonViTinh", "SoLuong", "DonGia",
+    "ThanhTien", "ThueSuat", "TienThue", "TienBangChu",
 ]
 
 
@@ -83,17 +103,20 @@ def tao_cac_dong_output(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat,
         # Phần thông tin chung (giống nhau cho mọi dòng output cùng MaHD)
         thong_tin_chung = {
             "MaHD": ma_hd,
+            "LoaiHoaDon": "0",  # 0 = hóa đơn gốc (không điều chỉnh/thay thế)
             "NgayHoaDon": ngay_hoa_don_str,
+            "TenNguoiMua": dong.get("Họ tên người mua hàng", ""),
             "TenDonVi": dong.get("Tên đơn vị mua hàng", ""),
-            "NguoiMuaHang": dong.get("Họ tên người mua hàng", ""),
             "DiaChiKhachHang": dong.get("Địa chỉ", ""),
             "MaSoThue": dong.get("Mã số thuế", ""),
             "CCCD": L.chuan_hoa_cccd(dong.get("CCCD", "")),  # cột CCCD (Bảng soát); ezcloud để rỗng
             "SHChieu": dong.get("PASSPORT", ""),  # số hộ chiếu (Bảng soát); ezcloud để rỗng
             "MailKhachHang": dong.get("Email", ""),  # cột Email (tính năng Bảng soát); ezcloud để rỗng
             "HinhThucThanhToan": dong.get("Hình thức thanh toán", ""),
+            "LoaiTien": "VND",
+            "TyGia": "1",
             "LoaiHangHoa": "1",
-            "LoaiHangHoaDacTrung": "0",
+            "LoaiHangHoaDacTrung": "",  # dropdown file mới chỉ có 1/2/3, không còn "0" nên để trống
             "ThueSuat": thue_suat,
         }
 
@@ -143,19 +166,26 @@ def xuat_file_bytes(bang_hoa_don, so_nhom, ngay_hoa_don_str, thue_suat,
         tron_tong=tron_tong, don_gia_chua_thue=don_gia_chua_thue,
     )
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Sheet1"
+    # Nạp THẲNG file mẫu thật làm nền (giữ nguyên đủ 3 sheet, named range, data
+    # validation, dòng 1 ẩn, dòng 2 nhãn...) thay vì tự dựng workbook trắng.
+    if not os.path.exists(TEMPLATE_PATH):
+        raise FileNotFoundError(
+            f"Không tìm thấy file mẫu VinInvoice tại: {TEMPLATE_PATH}. "
+            "File này bắt buộc phải có trong thư mục dự án để xuất đúng định dạng."
+        )
+    wb = openpyxl.load_workbook(TEMPLATE_PATH)
+    ws = wb[TEMPLATE_SHEET]
 
     font = Font(name="Arial")
 
-    # Ghi dòng tiêu đề (row 1)
-    for col_idx, header in enumerate(OUTPUT_HEADERS, start=1):
-        c = ws.cell(row=1, column=col_idx, value=header)
-        c.font = font
+    # Xóa các dòng dữ liệu VÍ DỤ có sẵn trong file mẫu (không được lẫn vào file thật),
+    # chỉ giữ lại dòng 1 (mã field, ẩn) và dòng 2 (nhãn tiếng Việt).
+    so_dong_vi_du = ws.max_row - (DATA_START_ROW - 1)
+    if so_dong_vi_du > 0:
+        ws.delete_rows(DATA_START_ROW, so_dong_vi_du)
 
-    # Ghi dữ liệu từ row 2
-    for row_idx, dong_out in enumerate(cac_dong, start=2):
+    # Ghi dữ liệu thật từ dòng DATA_START_ROW
+    for row_idx, dong_out in enumerate(cac_dong, start=DATA_START_ROW):
         for col_idx, header in enumerate(OUTPUT_HEADERS, start=1):
             gia_tri = _chuoi(dong_out.get(header, ""))
             c = ws.cell(row=row_idx, column=col_idx, value=gia_tri)
